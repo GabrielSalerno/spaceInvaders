@@ -4,7 +4,7 @@ from PPlay.sprite import *
 from PPlay.keyboard import *
 
 janela = Window(1280,640)
-janela.set_title("Gabriel Salerno")
+janela.set_title("Space Invaders")
 
 mou = Mouse()
 teclado = Keyboard()
@@ -12,30 +12,31 @@ teclado = Keyboard()
 jogo_iniciado = False
 dificuldade_select = False
 
+# Botões do menu
 botaoJogar = Sprite("spaceInvaders/objetos/botaoJogar.png", frames=1)
 botaoJogar.x = (janela.width - botaoJogar.width)/2
-botaoJogar.y = (botaoJogar.height)
+botaoJogar.y = (botaoJogar.height + 50)
 botaoJogar.set_position(botaoJogar.x,botaoJogar.y)
 
 botaoDif = Sprite("spaceInvaders/objetos/botaoDif.png", frames=1)
 botaoDif.x = (janela.width - botaoDif.width)/2
-botaoDif.y = (botaoDif.height + 100)
+botaoDif.y = (botaoDif.height + 150)
 botaoDif.set_position(botaoDif.x,botaoDif.y)
 
 botaoRank = Sprite("spaceInvaders/objetos/botaoRank.png", frames=1)
 botaoRank.x = (janela.width - botaoRank.width)/2
-botaoRank.y = (botaoRank.height + 200)
+botaoRank.y = (botaoRank.height + 250)
 botaoRank.set_position(botaoRank.x,botaoRank.y)
 
 botaoSair = Sprite("spaceInvaders/objetos/botaoSair.png", frames=1)
 botaoSair.x = (janela.width - botaoSair.width)/2
-botaoSair.y = (botaoSair.height + 300)
+botaoSair.y = (botaoSair.height + 350)
 botaoSair.set_position(botaoSair.x,botaoSair.y)
 
 # Botões da janela de dificuldade
 botaoFacil = Sprite("spaceInvaders/objetos/botaoFacil.png",frames=1)
 botaoFacil.x = (janela.width - botaoFacil.width)/2
-botaoFacil.y = (botaoFacil.height+150)
+botaoFacil.y = (botaoFacil.height+100)
 botaoFacil.set_position(botaoFacil.x,botaoFacil.y)
 
 botaoMed = Sprite("spaceInvaders/objetos/botaoMed.png", frames=1)
@@ -45,9 +46,10 @@ botaoMed.set_position(botaoMed.x,botaoMed.y)
 
 botaoDificil = Sprite("spaceInvaders/objetos/botaoDificil.png", frames=1)
 botaoDificil.x = (janela.width - botaoDificil.width)/2
-botaoDificil.y = ((janela.height - botaoMed.height)/2) + 85
+botaoDificil.y = ((janela.height - botaoDificil.height)/2) + (botaoDificil.height+100)
 botaoDificil.set_position(botaoDificil.x,botaoDificil.y)
 
+# Dificuldade Padrão
 dificulade = 1
 
 while(True):
@@ -102,5 +104,3 @@ while(True):
         botaoRank.draw()
         botaoSair.draw()
         janela.update()
-
-# dificulade = 1 (facil)(padrão) ou 2 (media) ou 3 (dificil)
