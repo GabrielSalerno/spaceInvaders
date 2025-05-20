@@ -6,6 +6,20 @@ from PPlay.keyboard import *
 
 #Peguei o codigo do aluno Gabriel Nascimento Garcia
 
+def gerar_matriz(l,c,arquivo_sprite):
+    monstros = list()
+
+    for lin in range(l):
+        linha = list()
+        for col in range(c):
+            monstro = Sprite(arquivo_sprite,frames=1)
+            monstro.x = col * ((monstro.width/2) + monstro.width)
+            monstro.y = lin * ((monstro.height/2) + monstro.height) + 40
+            monstro.set_position(monstro.x,monstro.y)
+            linha.append(monstro)
+        monstros.append(linha)
+    return monstros
+
 # Configuração da janela
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
@@ -41,6 +55,13 @@ velTiroy = 200
 
 # GS - Lista tiros
 tiros = list()
+
+L = 4
+C = 4
+monstros = gerar_matriz(L,C,"monstro.png")
+
+velMonstrosx = 250
+velMonstrosy = 30
 
 # GS - Iniciando cronometro
 tempo_ultimo_tiro = 0.2
@@ -132,6 +153,9 @@ def tratar_clique_dificuldade(texto_botao): # GS - Adicionei as dificuldades ind
         dif = 3
 
 mouse_estava_pressionado = False  # Adicione isso antes do loop principal
+direcao = 1
+inverteu = False
+gameover = False
 
 while True:
     mouse_pressionado = mouse.is_button_pressed(1)
@@ -160,14 +184,38 @@ while True:
             recarga_tiro *= dif
             jogo_iniciado = True 
         tempo_ultimo_tiro += window.delta_time()
+        if not gameover:
+            # GS - Nave se mexendo com as setas e colidindo nas paredes
+            if nave.x + nave.width <= window.width:
+                if keyboard.key_pressed("right"):
+                    nave.x = nave.x + velNavex * window.delta_time() / dif
+            if nave.x >= 0:
+                if keyboard.key_pressed("left"):
+                    nave.x = nave.x + velNavex * window.delta_time() * -1 / dif
 
-        # GS - Nave se mexendo com as setas e colidindo nas paredes
-        if nave.x + nave.width <= window.width:
-            if keyboard.key_pressed("right"):
-                nave.x = nave.x + velNavex * window.delta_time() / dif
-        if nave.x >= 0:
-            if keyboard.key_pressed("left"):
-                nave.x = nave.x + velNavex * window.delta_time() * -1 / dif
+            for l in monstros:
+                for c in l:
+                    c.x += velMonstrosx * direcao * window.delta_time()
+
+            monstroEsquerda = monstros[0][0]
+            monstroDireita = monstros[0][-1]
+
+            if not inverteu:                   
+                if monstroDireita.width + monstroDireita.x >= window.width or monstroEsquerda.x <= 0:
+                    direcao *= -1
+                    for l in monstros:     
+                        for c in l:
+                            c.y += velMonstrosy
+                    inverteu = True
+            
+            if inverteu:
+                if monstroEsquerda.x > 0 and monstroDireita.width + monstroDireita.x < window.width:
+                    inverteu = False
+            
+            monstrosEmbaixo = monstros[-1]
+            for l in monstrosEmbaixo:
+                if (l.y + l.height >= nave.y):
+                    gameover = True
 
         if keyboard.key_pressed("space") and tempo_ultimo_tiro >= recarga_tiro:
             tiro = Sprite("tiro.png",frames=1)
@@ -188,6 +236,11 @@ while True:
         nave.draw()
         for i in tiros:
             i.draw()
+        for l in monstros:
+            for c in l:
+                c.draw()
+        if gameover:
+            window.draw_text("Game Over", window.width/2, window.height/2, size=28, color=(142,50,0), font_name="Arial", bold=False, italic=False)
         # GS - Apaguei o texto que tinha, para avisando q apertar esc saia do jogo
         if keyboard.key_pressed("ESC"):
             estado_atual = MENU
@@ -222,3 +275,5 @@ while True:
 
     mouse_estava_pressionado = mouse_pressionado  # Atualize o estado do mouse
     window.update()
+
+    #distracia entre monstros width do sprite do monstro/2 e a altura /2
