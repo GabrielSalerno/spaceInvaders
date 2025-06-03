@@ -217,6 +217,7 @@ while True:
                     inverteu = False
             
             monstrosEmbaixo = monstros[-1]
+
             for l in monstrosEmbaixo:
                 if (l.y + l.height >= nave.y):
                     gameover = True
@@ -236,17 +237,16 @@ while True:
                 if tiros[c].y + tiros[c].height < 0:
                     del tiros[c]
         
-        for t in range(len(tiros)-1,-1,-1):
-            if (tiros[t].y < monstrosEmbaixo.y+monstrosEmbaixo.height):
-                if (tiro[t].x > monstroDireita.x+monstroDireita.widht):
-                    if tiros[t].x+tiros[t].width < monstroEsquerda.x:   
-                        for l in range(len(monstros)):
-                            for c in range(monstros[l]):
-                                for i in range(len(tiros)):
-                                    if (tiros[i].y >= monstros[l][c].y+monstros[l][c].height):
-                                        if (tiros[i].x >= monstros[l][c].x):
-                                            del tiros[i]
-                                            monstros[l][c] = None
+        for t in range(len(tiros)):
+            tiro = tiros[t]
+            if (monstroEsquerda.x <= tiro.x+tiro.width and tiro.x <= monstroDireita.x+monstroDireita.width):
+                if (tiro.y >= monstrosEmbaixo[0].y+monstrosEmbaixo[0].height):
+                    for l in monstros:
+                        for monstro in l:
+                            if monstro and tiro.collided(monstro):
+                                l.remove(monstro)
+                                tiros.remove(tiro)
+                                break
 
         imagem_fundo.draw()
         nave.draw()
