@@ -4,11 +4,9 @@ from PPlay.sprite import *
 from PPlay.mouse import *
 from PPlay.keyboard import *
 from PPlay.collision import *
+from random import randint
 
 #Peguei o codigo do aluno Gabriel Nascimento Garcia
-
-# Cada tiro colisao com cada monstro, se sim retirar monstro da lista destruir tiro.
-# for(lin) com for(col) com for(tiro), if tiro abaixo da lista não entra no for,if tiro em cima pode sair do for, if tiro a direita ou a esquerda do monstro mais a esquerda ou a direita não entra no for
 
 def gerar_matriz(l,c,arquivo_sprite):
     monstros = list()
@@ -60,6 +58,9 @@ velTiroy = 200
 # GS - Lista tiros
 tiros = list()
 
+# GS - Tiros monstros
+tiros_monstros = list()
+
 L = 4
 C = 4
 monstros = gerar_matriz(L,C,"monstro.png")
@@ -69,7 +70,9 @@ velMonstrosy = 30
 
 # GS - Iniciando cronometro
 tempo_ultimo_tiro = 0.2
+tempo_ultimo_tiro_monstro = 0.2
 recarga_tiro = 0.2
+recarga_tiro_monstro = 0.8
 
 # Propriedades dos botões
 largura_botao = 300
@@ -161,6 +164,14 @@ direcao = 1
 inverteu = False
 gameover = False
 
+vidas = 3
+invencivel = False
+tempo_invencivel = 0
+
+contadorFrame = 0
+tempoAcumuladoFPS = 0
+fps = 0
+
 while True:
     mouse_pressionado = mouse.is_button_pressed(1)
 
@@ -186,8 +197,10 @@ while True:
         # GS - Tempo entre tiros com dificuldade
         if not jogo_iniciado:
             recarga_tiro *= dif
+            recarga_tiro_monstro /= dif
             jogo_iniciado = True 
         tempo_ultimo_tiro += window.delta_time()
+        tempo_ultimo_tiro_monstro += window.delta_time()
         if not gameover:
             # GS - Nave se mexendo com as setas e colidindo nas paredes
             if nave.x + nave.width <= window.width:
@@ -222,6 +235,32 @@ while True:
                 if (l.y + l.height >= nave.y):
                     gameover = True
 
+        if tempo_ultimo_tiro_monstro >= recarga_tiro_monstro:
+            atirador = monstros[randint(0,len(monstros[0])-1)][randint(0,len(monstros)-1)]#mudei
+            tiro_monstro = Sprite("tiroMonstro.png")
+            tiro_monstro.x = atirador.x + (atirador.width/2)
+            tiro_monstro.y = atirador.y + atirador.height
+            tiros_monstros.append(tiro_monstro)
+            tempo_ultimo_tiro_monstro = 0
+        
+        if len(tiros_monstros) > 0:
+            for i in tiros_monstros:
+                i.y = i.y + velTiroy * window.delta_time()
+        
+        for tiro_monstro in tiros_monstros:
+            if tiro_monstro.collided(nave) and not invencivel:
+                vidas -= 1
+                nave.x = (window.width-nave.width)/2
+                nave.y = window.height-nave.height
+                nave.set_position(nave.x,nave.y)
+                invencivel = True
+                tiros_monstros.remove(tiro_monstro)
+            elif tiro_monstro.y > window.height:
+                tiros_monstros.remove(tiro_monstro)
+        
+        if tempo_invencivel >= 2:
+            invencivel = False
+
         if keyboard.key_pressed("space") and tempo_ultimo_tiro >= recarga_tiro:
             tiro = Sprite("tiro.png",frames=1)
             tiro.x = nave.x + (nave.width/2)
@@ -237,25 +276,55 @@ while True:
                 if tiros[c].y + tiros[c].height < 0:
                     del tiros[c]
         
-        for t in range(len(tiros)):
+        for t in range(len(tiros)-1,-1,-1):
             tiro = tiros[t]
             if (monstroEsquerda.x <= tiro.x+tiro.width and tiro.x <= monstroDireita.x+monstroDireita.width) and (tiro.y <= monstrosEmbaixo[0].y+monstrosEmbaixo[0].height):
+                    colisao_ocorreu = False
                     for l in monstros:
                         for monstro in l:
                             if monstro and tiro.collided(monstro):
                                 l.remove(monstro)
-                                tiros.remove(tiro)
+                                tiros.pop(t)
+                                colisao_ocorreu = True
                                 break
+                            if colisao_ocorreu:
+                                break
+        
+        tempoAcumuladoFPS += window.delta_time()
+        contadorFrame += 1
+
+        if tempoAcumuladoFPS >= 1:
+            fps = contadorFrame
+            contadorFrame = 0
+            tempoAcumuladoFPS = 0
 
         imagem_fundo.draw()
-        nave.draw()
+
+        window.draw_text(str(fps), window.width-58,10, size=32, color=(255, 255, 255),font_name="Arial")
+
         for i in tiros:
             i.draw()
         for l in monstros:
             for c in l:
                 c.draw()
-        if gameover:
-            window.draw_text("Game Over", window.width/2, window.height/2, size=28, color=(142,50,0), font_name="Arial", bold=False, italic=False)
+        for tirosMonstro in tiros_monstros:
+            tirosMonstro.draw()
+        
+        if invencivel:
+            tempo_invencivel += window.delta_time()
+            if (tempo_invencivel*5)%2==0:
+                nave.draw()
+            if tempo_invencivel >2:
+                invencivel = False
+                tempo_invencivel = 0
+        else:
+            nave.draw()
+            
+
+        if gameover or vidas == 0:
+            window.draw_text("Game Over", window.width/2-38, window.height/2-28, size=28, color=(142,50,0), font_name="Arial", bold=False, italic=False)
+        window.draw_text(f"Vidas: {vidas}",8,10,size=28,color=(255,255,255),font_name="Arial")
+
         # GS - Apaguei o texto que tinha, para avisando q apertar esc saia do jogo
         if keyboard.key_pressed("ESC"):
             estado_atual = MENU
@@ -289,6 +358,5 @@ while True:
             estado_atual = MENU
 
     mouse_estava_pressionado = mouse_pressionado  # Atualize o estado do mouse
-    window.update()
 
-    #distracia entre monstros width do sprite do monstro/2 e a altura /2
+    window.update()
