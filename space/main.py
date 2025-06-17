@@ -9,7 +9,8 @@ from monstro import *
 from nave import *
 from arquivo import *
 
-#Peguei o codigo do aluno Gabriel Nascimento Garcia
+# Nome Gabriel Salerno
+# Peguei o codigo do aluno Gabriel Nascimento Garcia
 
 # Configuração da janela
 WINDOW_WIDTH = 800
@@ -163,6 +164,8 @@ pontuacao = 0
 
 monstrosEmbaixo = []
 
+rankingRegistrado = False
+
 while True:
     mouse_pressionado = mouse.is_button_pressed(1)
 
@@ -193,8 +196,7 @@ while True:
             recarga_tiro *= dif
             recarga_tiro_monstro /= dif
             jogo_iniciado = True 
-            nome = input()
-            criarRanking(pontuacao)
+        
         tempo_ultimo_tiro += window.delta_time()
         tempo_ultimo_tiro_monstro += window.delta_time()
 
@@ -344,8 +346,11 @@ while True:
         if gameover or vidas == 0:
             gameover = True
             window.draw_text("Game Over", window.width/2, window.height/2, size=28, color=(142,50,0), font_name="Arial")
+            if not rankingRegistrado:
+                nome = input("Nome: ")
+                criarRanking(nome,pontuacao)
+                rankingRegistrado = True
             jogo_iniciado = False
-
 
         window.draw_text(f"Vidas: {vidas}",8,10,size=28,color=(255,255,255),font_name="Arial")
 
@@ -373,9 +378,14 @@ while True:
 
     # Estado de ranking
     elif estado_atual == RANKING:
-
-
         imagem_fundo.draw()
+        window.draw_text("TOP 5 RANKING", window.width//2 - 150, 50, size=40, color=(255, 255, 255))
+        ranking = lerRanking()
+        y = 150
+        for i, (nome, pontuacao, data) in enumerate(ranking):
+            texto = f"{i+1}. {nome} - {pontuacao} pts - {data}"
+            window.draw_text(texto, 100, y, size=30, color=(255, 255, 255))
+            y += 50
         if keyboard.key_pressed("ESC"):
             estado_atual = MENU
 
