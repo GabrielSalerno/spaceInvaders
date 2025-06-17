@@ -193,6 +193,8 @@ while True:
             recarga_tiro *= dif
             recarga_tiro_monstro /= dif
             jogo_iniciado = True 
+            nome = input()
+            criarRanking(pontuacao)
         tempo_ultimo_tiro += window.delta_time()
         tempo_ultimo_tiro_monstro += window.delta_time()
 
@@ -204,8 +206,9 @@ while True:
                 for c in l:
                     c.x += velMonstrosx * direcao * window.delta_time()
 
-            monstroEsquerda = monstros[0][0]
-            monstroDireita = monstros[0][-1]
+            if monstros and monstros[0]:
+                monstroEsquerda = monstros[0][0]
+                monstroDireita = monstros[0][-1]
 
             if not inverteu:                   
                 if monstroDireita.width + monstroDireita.x >= window.width or monstroEsquerda.x <= 0:
@@ -282,6 +285,8 @@ while True:
                                 if monstro and tiro.collided(monstro):
                                     pontuacao += 1
                                     l.remove(monstro)
+                                    if len(l)==0:
+                                        monstros.remove(l)
                                     monstrosEmbaixo = []
                                     for linha in monstros:
                                         if linha:
@@ -335,12 +340,10 @@ while True:
         else:
             if not gameover:
                 nave.draw()
-            
 
         if gameover or vidas == 0:
-            criarRanking(pontuacao)
             gameover = True
-            window.draw_text("Game Over", window.width/2-38, window.height/2-28, size=28, color=(142,50,0), font_name="Arial", bold=False, italic=False)
+            window.draw_text("Game Over", window.width/2, window.height/2, size=28, color=(142,50,0), font_name="Arial")
             jogo_iniciado = False
 
 
@@ -370,11 +373,9 @@ while True:
 
     # Estado de ranking
     elif estado_atual == RANKING:
+
+
         imagem_fundo.draw()
-        texto_ranking = "Tela de Ranking - Pressione ESC para voltar"
-        largura_texto_ranking = calcular_centro_texto(texto_ranking, 32)
-        texto_ranking_x = WINDOW_WIDTH//2 - largura_texto_ranking//2
-        window.draw_text(texto_ranking, texto_ranking_x, WINDOW_HEIGHT//2, size=32, color=(255, 255, 255))
         if keyboard.key_pressed("ESC"):
             estado_atual = MENU
 
