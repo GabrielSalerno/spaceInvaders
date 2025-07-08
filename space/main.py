@@ -166,6 +166,19 @@ monstrosEmbaixo = []
 
 rankingRegistrado = False
 
+escudo100 = Sprite("sprites/escudo100.png",frames=1)
+escudo100.x = (window.width-escudo100.width)/2
+escudo100.y = window.height-115
+escudo100.set_position(escudo100.x,escudo100.y)
+
+escudo50 = Sprite("sprites/escudo50.png",frames=1)
+escudo50.x = escudo100.x
+escudo50.y = escudo100.y
+escudo50.set_position(escudo50.x,escudo50.y)
+
+primeira_vida_escudo = True
+segunda_vida_escudo = False
+
 while True:
     mouse_pressionado = mouse.is_button_pressed(1)
 
@@ -320,7 +333,32 @@ while True:
             contadorFrame = 0
             tempoAcumuladoFPS = 0
 
+        if primeira_vida_escudo or segunda_vida_escudo:
+            for c in range(len(tiros)-1,-1,-1):
+                if tiros[c].collided(escudo100):
+                    del tiros[c]
+                elif tiros[c].collided(escudo50):
+                    del tiros[c]
+        
+        if primeira_vida_escudo:
+            for c in range(len(tiros_monstros)-1,-1,-1):
+                if tiros_monstros[c].collided(escudo100):
+                    del tiros_monstros[c]
+                    if primeira_vida_escudo:
+                        primeira_vida_escudo = False
+                        segunda_vida_escudo = True
+        elif segunda_vida_escudo:
+            for c in range(len(tiros_monstros)-1,-1,-1):
+                    if tiros_monstros[c].collided(escudo50):
+                        del tiros_monstros[c]
+                        segunda_vida_escudo = False
+
         imagem_fundo.draw()
+
+        if primeira_vida_escudo:
+            escudo100.draw()
+        if segunda_vida_escudo:
+            escudo50.draw()
 
         window.draw_text(str(fps), window.width-58,10, size=32, color=(255, 255, 255),font_name="Arial")
 
